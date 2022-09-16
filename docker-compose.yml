@@ -1,0 +1,46 @@
+version: '3.1'
+
+services:
+
+  api:
+    image: api-springboot
+    build: ./
+    ports:
+    - "8080:8080"
+    networks:
+      - commons-api
+    depends_on:
+      - postgres-compose
+      - s3
+    container_name: api
+
+  postgres-compose:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: "1203"
+      POSTGRES_DB: "syspub"
+    ports:
+      - "5430:5432"
+    networks:
+      - commons-api
+    container_name: postgres-compose
+
+  s3:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+    networks:
+      - commons-api
+    volumes:
+      - ./storage/minio:/data
+    container_name: s3 
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    command: server --address :9000 /data
+
+
+networks:
+  commons-api:
+    driver: bridge
